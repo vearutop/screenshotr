@@ -15,7 +15,7 @@ if (isset($_GET['url'])) {
     }
     elseif (!json_decode($_GET['options'], 1)) {
         var_dump($_GET['options']);
-        die('Ваши опции ожидаются в верной JSON нотации :(');
+        die('Р’Р°С€Рё РѕРїС†РёРё РѕР¶РёРґР°СЋС‚СЃСЏ РІ РІРµСЂРЅРѕР№ JSON РЅРѕС‚Р°С†РёРё :(');
     }
 
     $db->query("INSERT INTO shots (url, options) VALUES('"
@@ -23,12 +23,14 @@ if (isset($_GET['url'])) {
     . $db->escape_string($_GET['options']) . "')");
 
 
-    echo 'Ваша заявка принята. Ожидайте в комнате отдыха.<br>';
-    echo 'Страница: ' . $_GET['url'] . '<br>';
-    echo 'Изображение: <a href="/shots/' . imageFileName($_GET['url'], $_GET['options']) . '">будет тут</a><br>';
+    echo 'Р’Р°С€Р° Р·Р°СЏРІРєР° РїСЂРёРЅСЏС‚Р°. РћР¶РёРґР°Р№С‚Рµ РІ РєРѕРјРЅР°С‚Рµ РѕС‚РґС‹С…Р°.<br>';
+    echo 'РЎС‚СЂР°РЅРёС†Р°: ' . $_GET['url'] . '<br>';
+    echo 'РР·РѕР±СЂР°Р¶РµРЅРёРµ: <a href="//shot.scrn.tk/' . imageFileName($_GET['url'], $_GET['options']) . '">Р±СѓРґРµС‚ С‚СѓС‚</a><br>';
+
+	exec('/usr/bin/php /home/scrn/process-screenshots.php > /dev/null 2> /dev/null &');
 }
 else {
-    echo 'Привет!';
+    echo 'РџСЂРёРІРµС‚!';
 }
 
 

@@ -38,7 +38,7 @@ date_default_timezone_set('Asia/Novosibirsk');
 
 
     $instances = array(
-		'default' => 'mysql://screenshot:screenshot@localhost/screenshot',
+		'default' => 'mysql://scrn:scrn@localhost/scrn',
     );
 
     if (isset($_REQUEST['custom'])) {
