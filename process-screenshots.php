@@ -46,11 +46,12 @@ class ScreenShotProcessor {
     public function __construct() {
         set_time_limit(0);
         chdir($_SERVER['HOME']);
-        if (file_exists(self::LOCK_FILE) && file_get_contents(self::LOCK_FILE) > time()-300) {
+        if (file_exists(self::LOCK_FILE) && file_exists("/proc/" . file_get_contents(self::LOCK_FILE))) {
             throw new Exception('Locked' . "\n");
         }
 
-        file_put_contents(self::LOCK_FILE, time());
+        $pid = posix_getpid();
+        file_put_contents(self::LOCK_FILE, $pid);
     }
 
     public function __destruct() {
