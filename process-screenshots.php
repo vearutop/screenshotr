@@ -61,7 +61,7 @@ class ScreenShotProcessor {
 
     private function getNonProcessed() {
         $db = new mysqli('localhost', 'scrn', 'scrn', 'scrn');
-        $res = $db->query("SELECT * FROM shots WHERE built <= " . self::FLAG_READY . " AND built > -" . self::RETRIES . " ORDER BY id ASC LIMIT 1");
+        $res = $db->query("SELECT * FROM shots WHERE built <= " . self::FLAG_READY . " AND tries < " . self::RETRIES . " ORDER BY id ASC LIMIT 1");
         $r = $res->fetch_assoc();
         $db->close();
         return $r;
@@ -69,7 +69,7 @@ class ScreenShotProcessor {
 
     private function updateNonProcessed($r) {
         $db = new mysqli('localhost', 'scrn', 'scrn', 'scrn');
-        $q = "UPDATE shots SET processed = NOW(), build_time = build_time + '$r[build_time]', built = '$r[built]' WHERE id = '$r[id]'";
+        $q = "UPDATE shots SET processed = NOW(), build_time = build_time + '$r[build_time]', built = '$r[built]', tries = '$r[tries]' WHERE id = '$r[id]'";
         file_put_contents(self::LOG_FILE, $q . "\n", FILE_APPEND);
         $db->query($q);
         $db->close();
@@ -168,7 +168,8 @@ page.open('$r[url]', function () {
             }
 
 
-            $r['built'] = $built ? $built : $r['built'] - 1;
+            $r['built'] = $built;
+            $r['tries']++;
             $r['build_time'] = microtime(1) - $start;
 
             $this->updateNonProcessed($r);
