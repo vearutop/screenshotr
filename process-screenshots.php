@@ -104,6 +104,7 @@ class ScreenShotProcessor {
                 //print_r($r);
                 if (!($built & self::FLAG_IMAGE_BUILT)) {
                     $c = "var page = require('webpage').create();
+page.settings.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36';
 page.viewportSize = { width: '$options->viewPortWidth', height: '$options->viewPortHeight' };
 page.open('$r[url]', function () {
     window.setTimeout(function(){
