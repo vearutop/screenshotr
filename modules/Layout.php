@@ -1,17 +1,28 @@
 <?php
 
-class Layout implements View_Renderer {
-    public $pageTitle;
-    public $pageDescription;
+class Layout extends Base_Class implements View_Renderer {
+    public $pageTitle = 'ACME Site';
+    public $pageDescription = '100 years in business';
     public $faviconType = 'image/x-icon';
     public $favicon = '/favicon.ico';
+
+    public function __toString()
+    {
+        ob_start();
+        $this->render();
+        $result = ob_get_contents();
+        ob_end_clean();
+        return $result;
+    }
+
 
     /**
      * Array of link and meta elements
      * @var array
      */
     public $headItems = array(
-        '<link href="/css/main.css" media="all" rel="stylesheet" type="text/css" />'
+        'main.css' => '<link href="/css/main.css" media="all" rel="stylesheet" type="text/css" />',
+        'jquery.js' => '<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>'
     );
 
     public function setBody(View_Renderer $body) {
@@ -38,6 +49,8 @@ class Layout implements View_Renderer {
 
     public function render()
     {
+        $isDev = Http_Auth::getInstance('dev')->isProvidedDemandOnWrong();
+        $body = (string)$this->body;
         ?>
         <!DOCTYPE html>
         <html>
@@ -65,8 +78,38 @@ class Layout implements View_Renderer {
 
 
         <body>
+        <div class="header">
+            <div class="container">
+                <h1><a href="/"><?=$this->pageTitle?></a></h1>
+            </div>
+        </div>
 
-        <?php $this->body->render(); ?>
+
+        <div class="main-content container">
+            <?php echo $body; ?>
+        </div>
+
+
+        <div class="container footer">
+            <div class="counters">
+
+            </div>
+        </div>
+
+        <?php
+
+        if ($isDev) {
+            ?><div class="dev-debug">
+            <a href="/dev?logout">Logout debug mode</a>
+            <?php
+            $debugStorage = Storage::getInstance('debug_log');
+            $debugStorage->set('_SERVER', $_SERVER);
+            Debug_CollapsiblePrintR::create($debugStorage->exportArray())->render();
+            ?></div><?php
+        }
+        ?>
+
+
 
 
         </body>
