@@ -1,7 +1,7 @@
 <?php
 
 class Layout extends Base_Class implements View_Renderer {
-    public $pageTitle = 'ACME Site';
+    public $pageTitle = 'Генератор скриншотов сайтов';
     public $pageDescription = '100 years in business';
     public $faviconType = 'image/x-icon';
     public $favicon = '/favicon.ico';
