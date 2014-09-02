@@ -19,7 +19,9 @@ Http_Client::$conf['default'] = function () {
     return $r;
 };
 
-Log::$conf['default'] = '';
+Log::$conf['default'] = 'stdout';
+Log::$conf['update'] = 'file:///logs/processed.log';
+Log::$conf['error'] = 'file:///logs/error.log';
 
 if (App::MODE_CLI == App::instance()->mode) {
     App::db()->log(new Log('stdout'));
@@ -27,7 +29,6 @@ if (App::MODE_CLI == App::instance()->mode) {
 
 
 Storage::$conf['debug_log'] = 'php-var';
-/*
-Database::$conf['default'] = 'mysqli://user:password@localhost/db_name?charset=utf8&timezone=Europe/Moscow';
-Acme::db()->log(Log::getInstance(Log_Dsn::create('storage://localhost/?storage=debug_log')));
-*/
+
+Database::$conf['default'] = 'mysqli://scrn:scrn@localhost/scrn?charset=utf8&timezone=Europe/Moscow';
+App::db()->log(Log::getInstance(Log_Dsn::create('storage://localhost/?storage=debug_log')));

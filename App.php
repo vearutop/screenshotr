@@ -18,21 +18,18 @@ class App extends Yaoi {
              * index
              */
             case '/' === $path:
-                Controller_Acme::indexPage();
+                Controller_Main::indexPage();
                 break;
 
-            /**
-             * some page
-             */
-            case String_Utils::starts($path, '/some-page'):
-                Controller_Acme::somePage();
+            case !empty($_GET['url']):
+                Controller_Main::queueJob();
                 break;
 
             /**
              * some cli action (cron job)
              */
-            case (self::MODE_CLI === $this->mode) && '/some-action' === $path:
-                Controller_Acme::someAction();
+            case (self::MODE_CLI === $this->mode) && '/process' === $path:
+                Controller_Main::process();
                 break;
 
 
@@ -44,6 +41,7 @@ class App extends Yaoi {
                 break;
 
 
+            /** @noinspection PhpMissingBreakStatementInspection */
             case String_Utils::starts($path, '/dev-con'):
                 if (DevCon_Controller::create('/dev-con')
                     ->setAuth(Http_Auth::getInstance('dev'))

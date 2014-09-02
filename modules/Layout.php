@@ -25,6 +25,10 @@ class Layout extends Base_Class implements View_Renderer {
         'jquery.js' => '<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>'
     );
 
+    /**
+     * @param View_Renderer $body
+     * @return $this
+     */
     public function setBody(View_Renderer $body) {
         $this->body = $body;
         return $this;

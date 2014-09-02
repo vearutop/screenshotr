@@ -1,35 +1,6 @@
 <?php
 
-class ScreenShotProcessor_Options {
-    public $viewPortWidth = 1280;
-    public $viewPortHeight = 1024;
-    public $callbackUri;
-    public $resizeWidth;
-    public $resizeHeight;
-}
-
-
-class ScreenShotRequest {
-    public $id;
-    public $url;
-    public $requested;
-    public $processed;
-    public $build_time;
-    public $built;
-    public $options;
-
-
-    public static function fromArray(array $a) {
-        $instance = new static();
-        foreach ($a as $key => $value) {
-            $instance->$key = $value;
-        }
-        return $instance;
-    }
-
-}
-
-class ScreenShotProcessor {
+class Scrn_Processor {
     const LOCK_FILE = 'screen-shot.lock';
     const JS_FILE = 'screen-shot.js';
     const IMAGES_PATH = '/home/scrn/shots/';
@@ -60,19 +31,21 @@ class ScreenShotProcessor {
 
 
     private function getNonProcessed() {
-        $db = new mysqli('localhost', 'scrn', 'scrn', 'scrn');
-        $res = $db->query("SELECT * FROM shots WHERE built <= " . self::FLAG_READY . " AND tries < " . self::RETRIES . " ORDER BY id ASC LIMIT 1");
-        $r = $res->fetch_assoc();
-        $db->close();
+        $db = App::db();
+        $r = $db->query("SELECT * FROM shots WHERE built <= ?  AND tries < ? ORDER BY id ASC LIMIT 1",
+            self::FLAG_READY, self::RETRIES)->fetchRow();
+        $db->disconnect();
         return $r;
     }
 
     private function updateNonProcessed($r) {
-        $db = new mysqli('localhost', 'scrn', 'scrn', 'scrn');
-        $q = "UPDATE shots SET processed = NOW(), build_time = build_time + '$r[build_time]', built = '$r[built]', tries = '$r[tries]' WHERE id = '$r[id]'";
-        file_put_contents(self::LOG_FILE, $q . "\n", FILE_APPEND);
+        $db = App::db();
+        $q = $db->expr("UPDATE shots SET processed = NOW(), build_time = build_time + ?, built = ?, tries = ? WHERE id = ?",
+            $r['build_time'], $r['built'], $r['tries'], $r['id']);
+        $q->build($db);
+        Log::getInstance('update')->push($q);
         $db->query($q);
-        $db->close();
+        $db->disconnect();
     }
 
 
@@ -82,16 +55,17 @@ class ScreenShotProcessor {
 
     public function process() {
         while ($r = $this->getNonProcessed()) {
-            $imageFileName =  $this->imageFileName($r['url'], $r['options']);
+            $imageFileName = Scrn::imageFileName($r['url'], $r['options']);
             $out = self::IMAGES_PATH . $imageFileName;
             $imageUri = self::IMAGES_URI_PATH . $imageFileName;
             $r['url'] = addslashes($r['url']);
             $start = microtime(1);
 
-            echo date('Y-m-d H:i:s') . ' Processing ' . $r['url'] . "\n";
-            echo $imageUri . "\n";
+            $log = Log::getInstance('processing');
+            $log->push(date('Y-m-d H:i:s') . ' Processing ' . $r['url']);
+            $log->push($imageUri);
 
-            $options = new ScreenShotProcessor_Options();
+            $options = new Scrn_Options();
             if ($r['options']) {
                 foreach (json_decode($r['options'], 1) as $key => $value) {
                     $options->$key = $value;
@@ -103,26 +77,32 @@ class ScreenShotProcessor {
             while (1) {
                 //print_r($r);
                 if (!($built & self::FLAG_IMAGE_BUILT)) {
-                    $c = "var page = require('webpage').create();
+                    $url = $r['url'];
+                    $c =
+                        <<<JS
+var page = require('webpage').create();
 page.settings.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36';
-page.viewportSize = { width: '$options->viewPortWidth', height: '$options->viewPortHeight' };
-page.open('$r[url]', function () {
+page.viewportSize = {
+    width: '$options->viewPortWidth',
+    height: '$options->viewPortHeight'
+};
+page.open('$url', function () {
     window.setTimeout(function(){
         page.render('$out');
         phantom.exit();
     }, 3000);
 });
-";
+JS;
 
-                    echo "Building screenshto!\n";
+                    $log->push("Building screenshto!");
                     file_put_contents(self::JS_FILE, $c);
                     exec('/usr/bin/phantomjs ' . self::JS_FILE);
                     unlink(self::JS_FILE);
 
 
                     if (filesize($out) < 10000) {
-                        echo "Building failed!\n";
-                        file_put_contents(self::LOG_FILE, $r['url'] . ' image building failed' . "\n", FILE_APPEND);
+                        $log->push("Building failed!");
+                        Log::getInstance('error')->push($r['url'] . ' image building failed');
                         break;
                     }
 
@@ -144,17 +124,17 @@ page.open('$r[url]', function () {
 
                 if ($options->callbackUri && !($built & self::FLAG_CALLBACK_PERFORMED)) {
                     $opts = array('http' =>
-                    array(
-                        'method'  => 'HEAD',
-                    )
+                        array(
+                            'method'  => 'HEAD',
+                        )
                     );
-                    echo "Calling back\n";
+                    $log->push("Calling back");
 
                     $context = stream_context_create($opts);
                     $callbackUri = str_replace('__IMAGE_URI__', urlencode($imageUri), $options->callbackUri);
                     if (false === file_get_contents($callbackUri, false, $context)) {
-                        echo "Callback failed\n";
-                        file_put_contents(self::LOG_FILE, $r['url'] . ' callback failed' . "\n", FILE_APPEND);
+                        $log->push("Callback failed");
+                        Log::getInstance('error')->push($r['url'] . ' callback failed');
                         break;
                     }
                     else {
@@ -163,8 +143,6 @@ page.open('$r[url]', function () {
                 }
 
                 $built |= self::FLAG_READY;
-
-
                 break;
             }
 
@@ -174,28 +152,7 @@ page.open('$r[url]', function () {
             $r['build_time'] = microtime(1) - $start;
 
             $this->updateNonProcessed($r);
-            file_put_contents(self::LOG_FILE, $r['url'] . ' ' . $r['built'] . ' ' . $r['build_time'] . "\n", FILE_APPEND);
+            Log::getInstance('update')->push($r['url'] . ' ' . $r['built'] . ' ' . $r['build_time']);
         }
     }
 }
-
-$p = new ScreenShotProcessor();
-$p->process();
-
-
-
-
-
-/*
-
-CREATE TABLE  `screenshot`.`shots` (
-`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-`url` VARCHAR( 255 ) NOT NULL ,
-`requested` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
-`processed` TIMESTAMP NOT NULL ,
-`build_time` FLOAT NOT NULL ,
-`built` TINYINT NOT NULL,
-`options` TEXT DEFAULT NULL,
-) ENGINE = MYISAM ;
-
-*/
