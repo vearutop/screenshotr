@@ -24,7 +24,8 @@ class View_JobForm extends View_Hardcoded {
                     params.url = options.url;
                     delete options.url;
                     params.options = JSON.stringify(options);
-                    console.log($.param(params));
+                    window.location = $.param(params);
+                    //console.log($.param(params));
                 };
             })();
         </script>
