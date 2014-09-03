@@ -2,7 +2,7 @@
 
 class Scrn {
     public static $hostname = 'scrn.tk';
-    public static $shotsUrl;
+    public static $imagesPath = '/home/scrn/shots/';
 
     public static function imageFileName($url, $optionsJson = '') {
         return preg_replace('/[^a-zA-Z0-9_]/', '_', $url) . '_' . md5($url . $optionsJson) . '.png';
@@ -15,4 +15,3 @@ class Scrn {
     }
 
 }
-Scrn::$shotsUrl = 'http://shot.' . Scrn::$hostname;

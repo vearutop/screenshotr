@@ -3,10 +3,6 @@
 class Scrn_Processor {
     const LOCK_FILE = 'screen-shot.lock';
     const JS_FILE = 'screen-shot.js';
-    const IMAGES_PATH = '/home/scrn/shots/';
-    const LOG_FILE = 'logs/processed.log';
-    const IMAGES_URI_PATH = 'http://shot.scrn.tk/';
-
 
     const RETRIES = 5;
     const FLAG_IMAGE_BUILT = 1;
@@ -55,8 +51,8 @@ class Scrn_Processor {
     public function process() {
         while ($r = $this->getNonProcessed()) {
             $imageFileName = Scrn::imageFileName($r['url'], $r['options']);
-            $out = self::IMAGES_PATH . $imageFileName;
-            $imageUri = self::IMAGES_URI_PATH . $imageFileName;
+            $out = Scrn::$imagesPath . $imageFileName;
+            $imageUri = 'http://shot.' . Scrn::$hostname . $imageFileName;
             $r['url'] = addslashes($r['url']);
             $start = microtime(1);
 
@@ -97,7 +93,7 @@ JS;
                     $log->push("Building screenshto!");
                     file_put_contents(self::JS_FILE, $c);
                     exec('/usr/bin/phantomjs ' . self::JS_FILE);
-                    unlink(self::JS_FILE);
+                    //unlink(self::JS_FILE);
 
 
                     if (filesize($out) < 10000) {
@@ -115,8 +111,7 @@ JS;
                     $resize = $options->resizeWidth . 'x' . $options->resizeHeight;
                     exec('/usr/bin/convert "' . $out . '" -filter Lanczos -thumbnail ' . $resize . ' "' . $out . '"', $tmp, $return_var);
                     if ($return_var) {
-                        echo "Resizing failed\n";
-                        file_put_contents(self::LOG_FILE, $r['url'] . ' resizing failed' . "\n", FILE_APPEND);
+                        $log->push($r['url'] . ' resizing failed');
                         break;
                     }
                     $built |= self::FLAG_RESIZE_PERFORMED;

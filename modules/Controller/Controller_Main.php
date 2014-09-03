@@ -35,7 +35,7 @@ class Controller_Main {
 
             Scrn::addJob($url, $options);
             $imageFileName = Scrn::imageFileName($url, $options);
-            $shotsUrl = Scrn::$shotsUrl;
+            $shotsUrl = 'http://shot.' . Scrn::$hostname;
 
             $result =
                 <<<HTML
