@@ -56,6 +56,11 @@ class View_JobForm extends View_Hardcoded {
                         <input name="resizeHeight" value="150" />
                     </label>
 
+                    <label>Задержка перед захватом (мс)
+                        <input name="delay" value="3000" />
+                    </label>
+
+
 
                     <button class="button" type="submit">Отправить</button>
 

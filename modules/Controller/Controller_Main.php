@@ -39,9 +39,9 @@ class Controller_Main {
 
             $result =
                 <<<HTML
-                    Ваша заявка принята. Ожидайте в комнате отдыха.<br>
+                Ваша заявка принята. Ожидайте в комнате отдыха.<br>
                 Страница: $url<br>
-                Изображение: <a href="$shotsUrl/$imageFileName">будет тут</a><br>;
+                Изображение: <a href="$shotsUrl/$imageFileName">будет тут</a><br>
 HTML;
 
             exec('/usr/bin/php /home/scrn/process-screenshots.php > /dev/null 2> /dev/null &');

@@ -6,4 +6,5 @@ class Scrn_Options {
     public $callbackUri;
     public $resizeWidth;
     public $resizeHeight;
+    public $delay = 500;
 }

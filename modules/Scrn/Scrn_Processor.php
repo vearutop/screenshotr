@@ -78,6 +78,7 @@ class Scrn_Processor {
                 //print_r($r);
                 if (!($built & self::FLAG_IMAGE_BUILT)) {
                     $url = $r['url'];
+
                     $c =
                         <<<JS
 var page = require('webpage').create();
@@ -90,7 +91,7 @@ page.open('$url', function () {
     window.setTimeout(function(){
         page.render('$out');
         phantom.exit();
-    }, 3000);
+    }, $options->delay);
 });
 JS;
 
