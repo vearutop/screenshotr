@@ -21,6 +21,7 @@ Http_Client::$conf['default'] = function () {
 
 Log::$conf['default'] = 'stdout';
 Log::$conf['update'] = 'file:///logs/processed.log';
+Log::$conf['processing'] = 'file:///logs/processed.log';
 Log::$conf['error'] = 'file:///logs/error.log';
 
 Storage::$conf['debug_log'] = 'php-var';
