@@ -44,7 +44,8 @@ class Controller_Main {
                 Изображение: <a href="$shotsUrl/$imageFileName">будет тут</a><br>
 HTML;
 
-            exec('/usr/bin/php ~/scrn/cli.php /process > /dev/null 2> /dev/null &');
+            system('/usr/bin/php ~/scrn/cli.php /process');
+            //system('/usr/bin/php ~/scrn/cli.php /process > /dev/null 2> /dev/null &');
         }
         catch (Exception $e) {
             $result = $e->getMessage();
