@@ -1,6 +1,7 @@
 <?php
 
 class Scrn {
+    public static $hostname = 'scrn.tk';
     public static $shotsUrl;
 
     public static function imageFileName($url, $optionsJson = '') {
@@ -14,5 +15,4 @@ class Scrn {
     }
 
 }
-
-Scrn::$shotsUrl = 'http://shot.' . $_SERVER['HTTP_HOST'];
+Scrn::$shotsUrl = 'http://shot.' . Scrn::$hostname;

@@ -1,5 +1,7 @@
 <?php
 
+Scrn::$hostname = 'scrn.tk';
+
 date_default_timezone_set('Europe/Moscow');
 header("Content-Type: text/html; charset=utf8");
 

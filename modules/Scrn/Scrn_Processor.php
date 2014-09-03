@@ -40,11 +40,10 @@ class Scrn_Processor {
 
     private function updateNonProcessed($r) {
         $db = App::db();
-        $q = $db->expr("UPDATE shots SET processed = NOW(), build_time = build_time + ?, built = ?, tries = ? WHERE id = ?",
+        $q = $db->query("UPDATE shots SET processed = NOW(), build_time = build_time + ?, built = ?, tries = ? WHERE id = ?",
             $r['build_time'], $r['built'], $r['tries'], $r['id']);
-        $q->build($db);
-        Log::getInstance('update')->push($q);
-        $db->query($q);
+        Log::getInstance('update')->push($q->build());
+        $q->execute();
         $db->disconnect();
     }
 
